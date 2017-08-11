@@ -1,4 +1,8 @@
-ass GensimLsi(BaseEstimator, TransformerMixin):
+from gensim.models import LsiModel
+from gensim.corpora.dictionary import Dictionary
+from sklearn.base import BaseEstimator, TransformerMixin
+
+class GensimLsi(BaseEstimator, TransformerMixin):
     """
     Custom sklearn transformer to convert tokenized,
     preprocessed data to tf-idf representation.
