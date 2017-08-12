@@ -1,21 +1,19 @@
-""""""
+"""ocstring."""
+from difflib import get_close_matches
 
 from sklearn.pipeline import Pipeline
 
 from cleaner import TextProcessor
 from lsi import GensimLsi
-from utils import fetch_url, name_list
+from utils import name_set
 from vectorizers import GensimTfidf
 
 
-
 class Org2Org():
-    """
-    Implements Org-to-Org Queries.
-    """
+    """Implements Org-to-Org Queries."""
 
     def __init__(self, lsi_path, dict_path, tfidf_path):
-    	"""
+        """
         Initialize class.
 
         Parameters
@@ -32,39 +30,60 @@ class Org2Org():
             File-path designating where self.tfidf should be saved.
         """
         self.model = Pipeline([
-                ('norm', TextProcessor()),
-                ('tfidf', GensimTfidf(tfidf_path=tfidf_path, dictionary_path=dict_path)),
-                ('model', GensimLsi(lsi_path=lsi_path, dictionary_path=dict_path))
-            ])
+            ('norm', TextProcessor()),
+            ('tfidf', GensimTfidf(tfidf_path=tfidf_path,
+                                  dictionary_path=dict_path)),
+            ('model', GensimLsi(lsi_path=lsi_path,
+                                dictionary_path=dict_path))])
 
     @staticmethod
     def closest_match(string1, strings):
-    	""""""
-    	pass
+        """
+        Return the most similar org in name_set.
+
+        Parameters
+        ----------
+        string1: str
+            String being queried.
+        strings: list
+            List of org names.
+        """
+        result = get_close_matches('american cancer society', name_set)
+        try:
+            return result[0]
+        except IndexError:
+            return "Not Found"
 
     @classmethod
     def resolve_query(cls, org):
-    	"""
-        Finds most similar org to 'org'.
-        This is used to ensure that a match occurs.
-        Maybe implement as edit distance for every doc
         """
-        if org in name_list:
+        Find most similar org to 'org'.
+
+        Parameters
+        ----------
+        org: str
+            Name of organizatin to query.
+        """
+        if org in name_set:
             return org
-        return closest_match(org, name_list)
-
-
-
+        return cls.closest_match(org)
 
     def similarity(self, org, n=10):
-        """"""
-        doc = self.resolve_query(org)
-        result= self.model.similarity(doc=doc, n=n)
+        """A docstring."""
+        doc = Org2Org.resolve_query(org)
+        if doc == "Not Found":
+            return "Org not found, please search for another name."
+        result = self.model.similarity(doc=doc, n=n)
+        return result
 
 
 class Art2Org():
+    """init."""
+
     pass
 
 
 class Org2Art():
+    """init."""
+
     pass
