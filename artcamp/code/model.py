@@ -5,7 +5,7 @@ from sklearn.pipeline import Pipeline
 
 from cleaner import TextProcessor
 from lsi import GensimLsi
-from utils import name_set
+from data import name_list
 from vectorizers import GensimTfidf
 
 
@@ -39,7 +39,7 @@ class Org2Org():
     @staticmethod
     def closest_match(string1, strings):
         """
-        Return the most similar org in name_set.
+        Return the most similar org in name_list.
 
         Parameters
         ----------
@@ -48,7 +48,7 @@ class Org2Org():
         strings: list
             List of org names.
         """
-        result = get_close_matches('american cancer society', name_set)
+        result = get_close_matches('american cancer society', name_list)
         try:
             return result[0]
         except IndexError:
@@ -64,15 +64,21 @@ class Org2Org():
         org: str
             Name of organizatin to query.
         """
-        if org in name_set:
-            return org
-        return cls.closest_match(org)
+        if org in set(name_list):
+            correct_org = org
+        else:
+            correct_org = cls.closest_match(org)
+        # return associated data
+        return correct_org
 
     def similarity(self, org, n=10):
         """A docstring."""
-        doc = Org2Org.resolve_query(org)
+        doc, idx = Org2Org.resolve_query(org)
         if doc == "Not Found":
             return "Org not found, please search for another name."
+        # Find data associated with doc before returning anything
+        # i.e., doc = self.dictionary[idx]
+        # solution, load corpus and name_list together.
         result = self.model.similarity(doc=doc, n=n)
         return result
 
