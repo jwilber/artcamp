@@ -1,10 +1,13 @@
-import re
+import json
 import requests
 
 import pandas as pd
 from bs4 import BeautifulSoup
 
-
+def load_json(file_path):
+    with open(file_path) as json_data:
+        d = json.load(json_data)
+    return d
 
 def fetch_url(url, tags, verify, strip_unicode):
         """

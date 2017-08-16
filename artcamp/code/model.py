@@ -1,18 +1,26 @@
-"""ocstring."""
+"""docstring."""
+
+
 from difflib import get_close_matches
 
 from sklearn.pipeline import Pipeline
 
 from cleaner import TextProcessor
 from lsi import GensimLsi
-from data import name_list
 from vectorizers import GensimTfidf
+from utils import load_json
+
+org_data = load_json('../data/org_data.txt')
+name_list = load_json('../data/name_list.txt')
+
+
+# lsi = LsiModel(data_tfidf, id2word=tfidf_dict, num_topics=600)
 
 
 class Org2Org():
     """Implements Org-to-Org Queries."""
 
-    def __init__(self, lsi_path, dict_path, tfidf_path):
+    def __init__(self, lsi_path, dict_path, tfidf_path, org_data, name_list):
         """
         Initialize class.
 
@@ -28,13 +36,21 @@ class Org2Org():
             as its Dictionary.
         tfidf_path: str
             File-path designating where self.tfidf should be saved.
+        org_data: list
+            List of data.
+        name_list: list
+            List of names.
         """
-        self.model = Pipeline([
-            ('norm', TextProcessor()),
-            ('tfidf', GensimTfidf(tfidf_path=tfidf_path,
-                                  dictionary_path=dict_path)),
-            ('model', GensimLsi(lsi_path=lsi_path,
-                                dictionary_path=dict_path))])
+        self.org_data = org_data
+        self.name_list = name_list
+        self.processor = TextProcessor()
+        self.tfidf = GensimTfidf(tfidf_path=tfidf_path,
+                                 dictionary_path=dict_path,
+                                 use_sparse_representation=True)
+        self.lsi = GensimLsi.load(lsi_path)
+        self.transformer = Pipeline([
+            ('norm', self.processor),
+            ('tfidf', self.tfidf)])
 
     @staticmethod
     def closest_match(string1, strings):
@@ -48,14 +64,13 @@ class Org2Org():
         strings: list
             List of org names.
         """
-        result = get_close_matches('american cancer society', name_list)
+        result = get_close_matches(string1, strings)
         try:
             return result[0]
         except IndexError:
             return "Not Found"
 
-    @classmethod
-    def resolve_query(cls, org):
+    def resolve_query(self, org):
         """
         Find most similar org to 'org'.
 
@@ -64,23 +79,41 @@ class Org2Org():
         org: str
             Name of organizatin to query.
         """
-        if org in set(name_list):
+        if org in set(self.name_list):
             correct_org = org
         else:
-            correct_org = cls.closest_match(org)
+            correct_org = self.closest_match(org, self.name_list)
         # return associated data
-        return correct_org
+        return correct_org, self.name_list.index(correct_org)
 
     def similarity(self, org, n=10):
-        """A docstring."""
-        doc, idx = Org2Org.resolve_query(org)
+        """
+        Return n most similar orgs to org.
+
+        Parameters
+        ----------
+        org:
+            A document. embedded in same tfidf space as model.
+        n: int (default=10)
+            Number of most similar items to return.
+
+        Returns
+        -------
+            sims: dictionary of (item, distance) key, value pairs sorted by
+                similarity in descending order.
+        """
+        doc, idx = self.resolve_query(org)
+        print doc
+        print idx
         if doc == "Not Found":
             return "Org not found, please search for another name."
         # Find data associated with doc before returning anything
-        # i.e., doc = self.dictionary[idx]
-        # solution, load corpus and name_list together.
-        result = self.model.similarity(doc=doc, n=n)
-        return result
+        doc_data = self.org_data[idx]
+        # works
+        pp_data = self.processor.transform([doc_data])
+        # works
+        tfidf_data = self.tfidf.transform(pp_data)
+        return self.lsi.similarity(doc=tfidf_data[0], n=n)
 
 
 class Art2Org():
@@ -93,3 +126,13 @@ class Org2Art():
     """init."""
 
     pass
+
+
+# def main():
+#     o2o = Org2Org(lsi_path='lsi_model.pk', dict_path='tfidf_dict.pkl',
+#                   tfidf_path='tfidf.pkl',
+#                   org_data=org_data, name_list=name_list)
+
+
+# if __name__ == '__main__':
+#     main()
