@@ -8,19 +8,25 @@ from sklearn.pipeline import Pipeline
 from cleaner import TextProcessor
 from lsi import GensimLsi
 from vectorizers import GensimTfidf
-from utils import load_json
 
-org_data = load_json('../data/org_data.txt')
-name_list = load_json('../data/name_list.txt')
+import pickle
+
+with open("org_data.pkl", 'rb') as fp:
+    data = pickle.load(fp)
+with open("name_list.pkl", 'rb') as fp:
+    data_names = pickle.load(fp)
+
+TFIDF = 'tfidf.pkl'
+LSI = "test_lsi.pkl"
+INDEX = "test_index.pkl"
+ID2WORD = "tfidf_dict.pkl"
 
 
-# lsi = LsiModel(data_tfidf, id2word=tfidf_dict, num_topics=600)
+class OrgSim():
+    """Find Org most similar to Article."""
 
-
-class Org2Org():
-    """Implements Org-to-Org Queries."""
-
-    def __init__(self, lsi_path, dict_path, tfidf_path, org_data, name_list):
+    def __init__(self, lsi_path=LSI, id2word_path=ID2WORD, index_path=INDEX,
+                 tfidf_path=TFIDF, org_data=data, name_list=data_names):
         """
         Initialize class.
 
@@ -45,9 +51,11 @@ class Org2Org():
         self.name_list = name_list
         self.processor = TextProcessor()
         self.tfidf = GensimTfidf(tfidf_path=tfidf_path,
-                                 dictionary_path=dict_path,
+                                 dictionary_path=id2word_path,
                                  use_sparse_representation=True)
-        self.lsi = GensimLsi.load(lsi_path)
+        self.lsi = GensimLsi(lsi_path=lsi_path,
+                             id2word_path=id2word_path,
+                             index_path=index_path)
         self.transformer = Pipeline([
             ('norm', self.processor),
             ('tfidf', self.tfidf)])
@@ -88,32 +96,26 @@ class Org2Org():
 
     def similarity(self, org, n=10):
         """
-        Return n most similar orgs to org.
+        Return the 10 most similar orgs to org.
 
         Parameters
         ----------
-        org:
-            A document. embedded in same tfidf space as model.
-        n: int (default=10)
-            Number of most similar items to return.
+        org: string
+            Name of org to query.
+        n: int
+            Number of orgs to return.
 
         Returns
         -------
-            sims: dictionary of (item, distance) key, value pairs sorted by
-                similarity in descending order.
+            list: tuples of (org, similarity).
         """
         doc, idx = self.resolve_query(org)
         if doc == "Not Found":
             return "Org not found, please search for another name."
         # Find data associated with doc before returning anything
         doc_data = self.org_data[idx]
-        if isinstance(doc_data, list):
-            doc_data = doc_data
-        else:
-            doc_data = self.processor.transform([doc_data])
-        tfidf_data = self.tfidf.transform([doc_data])
-        result = self.lsi.similarity(org=tfidf_data[0], n=n)
-        return result
+        tfidf_data = self.transformer.transform([doc_data])
+        return self.lsi.similarity(doc=tfidf_data[0], n=n)
 
 
 class Art2Org():
@@ -126,21 +128,3 @@ class Org2Art():
     """init."""
 
     pass
-
-
-def main():
-    """Main func."""
-    # print org_data[1]
-    o2o = Org2Org(lsi_path='test_gensimlsisave.pkl',
-                  dict_path='tfidf_dict.pkl',
-                  tfidf_path='tfidf.pkl',
-                  org_data=org_data,
-                  name_list=name_list)
-
-    results = o2o.similarity('SurfAid International USA, Inc.')
-    print "Obtained results:"
-    print results
-
-
-if __name__ == '__main__':
-    main()
