@@ -103,17 +103,17 @@ class Org2Org():
                 similarity in descending order.
         """
         doc, idx = self.resolve_query(org)
-        print doc
-        print idx
         if doc == "Not Found":
             return "Org not found, please search for another name."
         # Find data associated with doc before returning anything
         doc_data = self.org_data[idx]
-        # works
-        pp_data = self.processor.transform([doc_data])
-        # works
-        tfidf_data = self.tfidf.transform(pp_data)
-        return self.lsi.similarity(doc=tfidf_data[0], n=n)
+        if isinstance(doc_data, list):
+            doc_data = doc_data
+        else:
+            doc_data = self.processor.transform([doc_data])
+        tfidf_data = self.tfidf.transform([doc_data])
+        result = self.lsi.similarity(org=tfidf_data[0], n=n)
+        return result
 
 
 class Art2Org():
@@ -128,11 +128,19 @@ class Org2Art():
     pass
 
 
-# def main():
-#     o2o = Org2Org(lsi_path='lsi_model.pk', dict_path='tfidf_dict.pkl',
-#                   tfidf_path='tfidf.pkl',
-#                   org_data=org_data, name_list=name_list)
+def main():
+    """Main func."""
+    # print org_data[1]
+    o2o = Org2Org(lsi_path='test_gensimlsisave.pkl',
+                  dict_path='tfidf_dict.pkl',
+                  tfidf_path='tfidf.pkl',
+                  org_data=org_data,
+                  name_list=name_list)
+
+    results = o2o.similarity('SurfAid International USA, Inc.')
+    print "Obtained results:"
+    print results
 
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
