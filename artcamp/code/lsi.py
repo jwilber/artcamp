@@ -1,10 +1,11 @@
 """Lsi Model."""
 import os
+import pickle
 
 from sklearn.base import BaseEstimator, TransformerMixin
-from utils import load_json
 
-name_list = load_json('../data/name_list.txt')
+with open("name_list.pkl", 'rb') as fp:
+    data_names = pickle.load(fp)
 
 
 # keep this
@@ -14,7 +15,6 @@ class GensimLsi(BaseEstimator, TransformerMixin):
     preprocessed data to tf-idf representation.
     """
     def __init__(self, id2word_path, lsi_path=None, index_path=None):
-        from gensim.corpora.dictionary import Dictionary
         self.num_topics = 10
         self.corpus = None
         self.index = None
@@ -24,7 +24,7 @@ class GensimLsi(BaseEstimator, TransformerMixin):
             self.model = self.load(lsi_path=lsi_path)
         if index_path is not None:
             self.index = self.load(index_path=index_path)
-        
+
     @staticmethod
     def load(lsi_path=None, id2word_path=None, index_path=None):
         """
@@ -73,14 +73,13 @@ class GensimLsi(BaseEstimator, TransformerMixin):
         """
         if not (self.model and self.id2word):
             raise AttributeError('Nothing to save yet, please run .fit first.')
-        if lsi_path is not None:   
+        if lsi_path is not None:
             self.model.save(lsi_path)
         if id2word_path is not None:
             self.id2word.save(id2word_path)
         if index_path is not None:
             self.index.save(index_path)
-        
-        
+
 
     def fit(self, documents, num_topics=600, labels=None):
         """
@@ -120,19 +119,19 @@ class GensimLsi(BaseEstimator, TransformerMixin):
             raise AttributeError('Must have a fit model in order'
                                  ' to call transform.')
         return self.model[documents]
-    
+
     def similarity(self, doc, n=10):
         """
         Returns the `n` most similar items in `self.corpus`
         to `doc`.
-        
+
         Parameters
         ----------
         doc:
             A document. embedded in same tfidf space as model.
         n: int (default=10)
             Number of most similar items to return.
-            
+
         Returns
         -------
             sims: dictionary of (item, distance) key, value pairs sorted by
@@ -147,15 +146,15 @@ class GensimLsi(BaseEstimator, TransformerMixin):
             print
             from gensim.similarities import MatrixSimilarity
             self.index = MatrixSimilarity(self.corpus)
-            
+
         # if n is larger than the number of documents, return 1 result
         _n = n * (n < len(self.index)) + (1 - (n < len(self.index))) * 1
-                                     
+
         if _n == 1:
             print("{n} too large a number, returning 1 result instead.").format(n=n)
         doc_lsi = self.model[doc]
         sims = self.index[doc_lsi]
         sims = sorted(enumerate(sims), key=lambda item: -item[1])[0:_n]
-        # results = ["Org: {0: <36} Similarity: {s}".format(data_names[i].encode('utf8').strip(), s=j) 
-        #            for i, j in name_list]
-        return sims
+        results = ["Org: {0} -- {s}".format(data_names[i].encode('utf8').strip(), s=j)
+                   for i, j in sims]
+        return results
