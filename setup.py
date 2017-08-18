@@ -1,8 +1,10 @@
 from setuptools import setup
 
+
 def readme():
     with open('README.rst') as f:
         return f.read()
+
 
 setup(name='artcamp',
       version='0.156',
@@ -10,6 +12,7 @@ setup(name='artcamp',
       url='http://github.com/jwilber/artcamp',
       author='Jared Wilber',
       author_email='jwilber@classy.org',
+      include_package_data=True,
       license='MIT',
       packages=['artcamp'],
       install_requires=[
