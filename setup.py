@@ -15,7 +15,6 @@ setup(name='artcamp',
       include_package_data=True,
       license='MIT',
       packages=['artcamp'],
-      package_dir={'artcamp': 'artcamp/artcamp'},
       package_data={'mypkg': ['data/*']},
       install_requires=[
           'gensim',
