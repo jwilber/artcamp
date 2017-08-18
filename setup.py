@@ -7,7 +7,7 @@ def readme():
 
 
 setup(name='artcamp',
-      version='0.163',
+      version='0.164',
       description='Query similarity between articles, orgs, and/or campaigns',
       url='http://github.com/jwilber/artcamp',
       author='Jared Wilber',
@@ -15,7 +15,7 @@ setup(name='artcamp',
       include_package_data=True,
       license='MIT',
       packages=['artcamp'],
-      package_data={'mypkg': ['data/*']},
+      package_data={'artcamp': ['data/*']},
       install_requires=[
           'gensim',
           'scikit-learn',
