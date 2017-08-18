@@ -24,10 +24,15 @@ path = os.path.join(os.path.dirname(__file__), 'data/name_list.pkl')
 with open(path, 'rb') as fp:
     data_names = pickle.load(fp)
 
-TFIDF = 'tfidf.pkl'
-LSI = "test_lsi.pkl"
-INDEX = "test_index.pkl"
-ID2WORD = "tfidf_dict.pkl"
+# TFIDF = 'tfidf.pkl'
+# LSI = "test_lsi.pkl"
+# INDEX = "test_index.pkl"
+# ID2WORD = "tfidf_dict.pkl"
+
+TFIDF = os.path.join(os.path.dirname(__file__), 'data/tfidf.pkl')
+LSI =  os.path.join(os.path.dirname(__file__), 'data/test_lsi.pkl')
+INDEX = os.path.join(os.path.dirname(__file__), 'data/test_index.pkl')
+ID2WORD =  os.path.join(os.path.dirname(__file__), 'data/tfidf_dict.pkl')
 
 
 class OrgSim():
