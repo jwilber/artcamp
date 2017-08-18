@@ -7,7 +7,7 @@ def readme():
 
 
 setup(name='artcamp',
-      version='0.166',
+      version='0.167',
       description='Query similarity between articles, orgs, and/or campaigns',
       url='http://github.com/jwilber/artcamp',
       author='Jared Wilber',

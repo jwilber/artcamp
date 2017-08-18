@@ -1,5 +1,7 @@
 """docstring."""
 
+import os
+
 
 from difflib import get_close_matches
 
@@ -17,7 +19,7 @@ import pickle
 #     data_names = pickle.load(fp)
 path = os.path.join(os.path.dirname(__file__), 'data/org_data.pkl')
 with open(path, 'rb') as fp:
-    data_names = pickle.load(fp)
+    data = pickle.load(fp)
 path = os.path.join(os.path.dirname(__file__), 'data/name_list.pkl')
 with open(path, 'rb') as fp:
     data_names = pickle.load(fp)
