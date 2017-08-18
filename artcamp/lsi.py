@@ -4,7 +4,13 @@ import pickle
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
-with open("name_list.pkl", 'rb') as fp:
+
+path = os.path.join(os.path.dirname(__file__), 'data/org_data.pkl')
+with open(path, 'rb') as fp:
+    data_names = pickle.load(fp)
+
+path = os.path.join(os.path.dirname(__file__), 'data/name_list.pkl')
+with open(path, 'rb') as fp:
     data_names = pickle.load(fp)
 
 
