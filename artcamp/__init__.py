@@ -1,4 +1,4 @@
-from .code.lsi import GensimLsi
+from .lsi import GensimLsi
 from .cleaner import TextProcessor
 from .vectorizers import GensimTfidf
 from .model import OrgSim
